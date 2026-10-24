@@ -1,34 +1,38 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'unsafe-inline';style-src 'unsafe-inline';connect-src 'self';base-uri 'none';form-action 'none'"><title>Cloud Mail · 站内批量注册码</title>
 <style>
 :root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#173332;background:#f4f6f2;line-height:1.6}*{box-sizing:border-box}body{margin:0}main{max-width:960px;margin:44px auto;padding:0 24px 60px}h1{font-size:32px;letter-spacing:-1px;margin:4px 0}h2{font-size:20px;margin:0 0 18px}.eyebrow{font-size:12px;letter-spacing:2px;color:#49746b}.intro{color:#57716b;margin:10px 0 28px}.card{background:white;border:1px solid #dbe4dc;border-radius:16px;padding:26px;margin:18px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:block;font-size:14px;font-weight:600}input,select{display:block;width:100%;border:1px solid #bacbc2;border-radius:8px;background:white;font:inherit;padding:10px 12px;margin:6px 0 3px;color:#173332}input:focus,select:focus{outline:2px solid #7fc3ac;outline-offset:1px}button{font:inherit;padding:10px 16px;border:1px solid #c7d8ce;border-radius:8px;background:#edf4ee;color:#173332;cursor:pointer}button.primary{background:#14634f;color:white;border-color:#14634f}button:disabled{opacity:.45;cursor:default}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.hint{font-size:13px;color:#61776d}.notice{font-size:14px;padding:14px 16px;border-radius:8px;background:#f9f3dc;color:#69551c}.status{white-space:pre-wrap;padding:14px 16px;border-radius:8px;background:#edf4ee;min-height:52px;margin-top:20px}.error{background:#fff0eb;color:#8b3320}.stats{font-size:17px;font-weight:600}.tablewrap{max-height:260px;overflow:auto;margin:15px 0;border:1px solid #e2e9e3;border-radius:8px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5ebe6}th{position:sticky;top:0;background:#f1f6f1}td.code{font-family:ui-monospace,monospace;overflow-wrap:anywhere}summary{cursor:pointer;color:#365e50}footer{color:#718276;font-size:12px}#importFile{display:none}[hidden]{display:none!important}@media(max-width:650px){main{margin-top:28px;padding:0 16px 36px}.grid{grid-template-columns:1fr}.card{padding:20px}h1{font-size:27px}}
-</style></head><body><main><div class="eyebrow">CLOUD MAIL / 库存准备</div><h1>一次生成一批注册码</h1><p class="intro">每张码仅可注册 1 次。写入你的邮箱后台，回查成功后导出给易店。</p>
+</style></head><body><main><div class="eyebrow">CLOUD MAIL / 库存准备</div><h1>批量生成 8 位注册码</h1><p class="intro">每张码仅可注册 1 次。准备候选码后，必须点击“开始入库”，回查显示可用才能交付。</p>
 <div class="notice">请先在同一浏览器登录 <a href="/" target="_blank" rel="noopener">Cloud Mail 邮箱站</a>的管理员账号，再回到此页读取登录状态。本页无需填写密码或任何 API 令牌。</div>
 <section class="card"><h2>1 · 连接你的邮箱后台</h2><div class="actions"><button id="login" class="primary">读取当前管理员登录</button><button id="logout" disabled>断开本页连接</button></div><p id="identity" class="hint">尚未连接。请先在邮箱站登录管理员账号。</p></section>
-<section class="card"><h2>2 · 设置本批次</h2><div class="grid"><label>生成张数<input id="quantity" type="number" min="1" max="200" value="20"><span class="hint">每批最多 200 张，首次建议 5 张。</span></label><label>买家获得的角色<select id="role" disabled><option value="">登录后选择普通用户角色</option></select></label><label>兑换截止时间<input id="expiry" type="datetime-local" step="60"><span id="zone" class="hint"></span></label><label>每张可用次数<input value="1 次（固定）" disabled><span class="hint">兑换截止日期不是邮箱服务到期日。</span></label></div><div class="actions"><button id="prepare" disabled>准备批次并下载恢复备份</button><button id="import">恢复已有批次</button><input id="importFile" type="file" accept=".json,application/json"></div><p class="hint">准备批次只生成候选码；点击下一步才会入库。恢复文件包含库存码，请安全保存。</p></section>
+<section class="card"><h2>2 · 设置本批次</h2><div class="grid"><label>生成张数<input id="quantity" type="number" min="1" max="200" value="5"><span class="hint">每批最多 200 张，首次建议 5 张。</span></label><label>买家获得的角色<select id="role" disabled><option value="">登录后选择普通用户角色</option></select></label><label>兑换截止时间<input id="expiry" type="datetime-local" step="60"><span id="zone" class="hint"></span></label><label>每张可用次数<input value="1 次（固定）" disabled><span class="hint">兑换截止日期不是邮箱服务到期日。</span></label></div><div class="actions"><button id="prepare" disabled>准备批次并下载恢复备份</button><button id="import">恢复已有批次</button><input id="importFile" type="file" accept=".json,application/json"></div><p class="hint">准备批次只生成候选码；点击下一步才会入库。恢复文件包含库存码，请安全保存。</p></section>
 <section class="card"><h2>3 · 入库、核对、导出</h2><p id="stats" class="stats">尚未准备批次</p><p id="batchInfo" class="hint"></p><div class="actions"><button id="run" class="primary" disabled>开始入库 / 继续本批次</button><button id="stop" disabled>完成当前请求后暂停</button><button id="verify" disabled>回查库存</button><button id="backup" disabled>下载最新恢复备份</button></div><div id="status" class="status" role="status" aria-live="polite">先登录，再选择角色与数量。</div><div class="actions"><button id="txt" disabled>核对后导出 TXT · 一行一码</button><button id="csv" disabled>核对后导出 CSV · 库存明细</button></div><p class="hint">只导出仍有 1 次额度、角色和有效期一致的码。TXT / CSV 是同一批库存的不同格式，不能当成两批重复导入。每种格式在当前批次中仅允许导出一次。</p><div class="tablewrap" hidden id="tablewrap"><table><thead><tr><th>注册码</th><th>状态</th></tr></thead><tbody id="rows"></tbody></table></div><details><summary>导入易店前须知</summary><p class="hint">TXT 不带标题，一行一个码。CSV 含 code、count、roleId、expireTimeUtc、batch。易店字段以实际导入模板为准；若要求卡号＋卡密，请先核对模板。每单出库 1 张，失败重试应取回原码。先用少量库存跑通，再扩大数量。</p></details></section><footer>此页作为 Cloud Mail 静态页面运行，不购买云资源。针对已核查的 Cloud Mail 3.4 注册码接口。请保存批次文件，避免多台设备重复导入库存。</footer></main>
 <script>'use strict';
 (function(root){
 const ORIGIN='https://mail.centennialcollege.edu.kg';
+const ALPHABET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 function utc(v){return typeof v==='string'&&v?Date.parse(/[zZ]|[+-]\d\d:\d\d$/.test(v)?v:v.replace(' ','T')+'Z'):NaN;}
 function hex(bytes){return Array.from(bytes,n=>n.toString(16).padStart(2,'0')).join('');}
+function shortCode(random){let value='';while(value.length<8){for(const byte of random(16)){if(byte<248)value+=ALPHABET[byte%62];if(value.length===8)break;}}return value;}
+function listPath(batch){return batch.version===1?'/regKey/list?code='+encodeURIComponent(batch.prefix):'/regKey/list';}
+function label(batch){return batch.version===1?batch.prefix.slice(0,-1):batch.batchId;}
 function plan(quantity,roleId,expireTime,random=n=>crypto.getRandomValues(new Uint8Array(n))){
  if(!Number.isInteger(quantity)||quantity<1||quantity>200)throw Error('每批数量应为 1–200。');
  if(!Number.isInteger(roleId)||roleId<=0)throw Error('请选择普通用户角色。');
  if(!Number.isFinite(utc(expireTime))||utc(expireTime)<=Date.now()+60000)throw Error('兑换截止时间至少应晚于现在一分钟。');
- const prefix='CM'+hex(random(8))+'-';
- const rows=Array.from({length:quantity},()=>({code:prefix+hex(random(16)),status:'pending',note:''}));
- if(new Set(rows.map(r=>r.code)).size!==quantity)throw Error('随机生成异常，请重新准备批次。');
- return {version:1,origin:ORIGIN,prefix,roleId,expireTime,createdAt:new Date().toISOString(),exportedAt:null,rows};
+ const rows=[];const seen=new Set();for(let i=0;i<quantity;i++){let code='',attempts=0;do{code=shortCode(random);if(++attempts>20)throw Error('随机生成异常，请重新准备批次。');}while(seen.has(code));seen.add(code);rows.push({code,status:'pending',note:''});}
+ return {version:2,origin:ORIGIN,batchId:'CM'+hex(random(8)),roleId,expireTime,createdAt:new Date().toISOString(),exportedAt:null,rows};
 }
 function validate(b){
- if(!b||b.version!==1||b.origin!==ORIGIN||!/^CM[0-9a-f]{16}-$/.test(b.prefix))throw Error('这不是本工具的有效批次备份。');
+ if(!b||b.origin!==ORIGIN||![1,2].includes(b.version))throw Error('这不是本工具的有效批次备份。');
+ if(b.version===1&&!/^CM[0-9a-f]{16}-$/.test(b.prefix))throw Error('旧批次编号无效。');
+ if(b.version===2&&!/^CM[0-9a-f]{16}$/.test(b.batchId))throw Error('批次编号无效。');
  if(!Array.isArray(b.rows)||!b.rows.length||b.rows.length>200||!Number.isInteger(b.roleId)||b.roleId<=0||!Number.isFinite(utc(b.expireTime)))throw Error('批次参数不完整。');
- for(const r of b.rows)if(!r||!new RegExp('^'+b.prefix+'[0-9a-f]{32}$').test(r.code)||!['pending','confirmed','unknown','unavailable'].includes(r.status))throw Error('批次中包含无效注册码。');
+ for(const r of b.rows)if(!r||!(b.version===1?new RegExp('^'+b.prefix+'[0-9a-f]{32}$').test(r.code):/^[A-Za-z0-9]{8}$/.test(r.code))||!['pending','confirmed','unknown','unavailable'].includes(r.status))throw Error('批次中包含无效注册码。');
  if(new Set(b.rows.map(r=>r.code)).size!==b.rows.length)throw Error('批次中有重复码。');return b;
 }
 function reconcile(b,remote,now=Date.now()){
  validate(b);if(!Array.isArray(remote))throw Error('库存返回格式不正确，暂不允许导出。');
- const map=new Map();for(const i of remote){if(map.has(i.code))throw Error('服务端有重复注册码，请到后台核查。');map.set(i.code,i);}
+ const codes=new Set(b.rows.map(r=>r.code));const map=new Map();for(const i of remote){if(!codes.has(i.code))continue;if(map.has(i.code))throw Error('服务端有重复注册码，请到后台核查。');map.set(i.code,i);}
  for(const r of b.rows){const i=map.get(r.code);
   if(!i){if(r.status==='confirmed'||r.status==='unavailable'){r.status='unavailable';r.note='已确认过的码不在库存中，禁止重新创建';}else{r.status='pending';r.note='';}}
   else if(Number(i.count)===1&&Number(i.roleId)===b.roleId&&utc(i.expireTime)===utc(b.expireTime)&&utc(i.expireTime)>now){r.status='confirmed';r.note='已回查：剩余 1 次，角色与有效期一致';}
@@ -37,15 +41,15 @@ function reconcile(b,remote,now=Date.now()){
 }
 async function run(b,api,{onChange=()=>{},shouldStop=()=>false,delay=()=>Promise.resolve()}={}){
  validate(b);if(utc(b.expireTime)<=Date.now())throw Error('本批次已经过期。');
- reconcile(b,await api('/regKey/list?code='+encodeURIComponent(b.prefix)));onChange();
+ reconcile(b,await api(listPath(b)));onChange();
  for(const r of b.rows){if(shouldStop())break;if(r.status!=='pending')continue;
   r.status='unknown';r.note='正在提交；若中断，需回查后再继续';onChange();
   try{await api('/regKey/add',{code:r.code,count:1,roleId:b.roleId,expireTime:b.expireTime});r.note='已提交，等待回查';}
-  catch(e){r.note='提交结果需核对：'+e.message;onChange();reconcile(b,await api('/regKey/list?code='+encodeURIComponent(b.prefix)));onChange();return {paused:true,reason:e.message};}
+  catch(e){r.note='提交结果需核对：'+e.message;onChange();reconcile(b,await api(listPath(b)));onChange();return {paused:true,reason:e.message};}
   onChange();await delay();
- }reconcile(b,await api('/regKey/list?code='+encodeURIComponent(b.prefix)));onChange();return {paused:shouldStop()};
+ }reconcile(b,await api(listPath(b)));onChange();return {paused:shouldStop()};
 }
-const lib={ORIGIN,utc,plan,validate,reconcile,run};if(typeof module!=='undefined'&&module.exports)module.exports=lib;else root.CloudMailBatch=lib;
+const lib={ORIGIN,utc,plan,validate,reconcile,run,listPath,label};if(typeof module!=='undefined'&&module.exports)module.exports=lib;else root.CloudMailBatch=lib;
 })(typeof globalThis!=='undefined'?globalThis:this);
 </script>
 <script>
@@ -56,7 +60,7 @@ const sameOrigin=location.protocol==='https:'&&location.origin===B.ORIGIN;
 const labels={pending:'待入库',confirmed:'已回查可用',unknown:'需回查',unavailable:'不可导出'};
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function backup(){if(!batch)return;batch.exportedFormats=[...exported];download(batch.prefix.slice(0,-1)+'-恢复备份.json',JSON.stringify(batch,null,2),'application/json;charset=utf-8');}
+function backup(){if(!batch)return;batch.exportedFormats=[...exported];download(B.label(batch)+'-恢复备份.json',JSON.stringify(batch,null,2),'application/json;charset=utf-8');}
 function refresh(){
  $('login').disabled=busy||!sameOrigin;$('logout').disabled=busy||!connected;
  $('prepare').disabled=busy||!connected||!!batch;$('import').disabled=busy||!!batch;
@@ -65,7 +69,7 @@ function refresh(){
  for(const id of ['txt','csv'])$(id).disabled=busy||!connected||!batch||exported.has(id);
  if(!batch)return;const count=s=>batch.rows.filter(r=>r.status===s).length;
  $('stats').textContent=`共 ${batch.rows.length} 张 · 可用 ${count('confirmed')} · 待入库 ${count('pending')} · 需回查 ${count('unknown')} · 不可用 ${count('unavailable')}`;
- $('batchInfo').textContent=`批次 ${batch.prefix.slice(0,-1)} ｜角色 ID ${batch.roleId} ｜兑换截止（UTC）${batch.expireTime}${batch.exportedAt?' ｜已有导出记录，请勿重复入库易店':''}`;
+ $('batchInfo').textContent=`批次 ${B.label(batch)} ｜角色 ID ${batch.roleId} ｜兑换截止（UTC）${batch.expireTime}${batch.exportedAt?' ｜已有导出记录，请勿重复入库易店':''}`;
  $('tablewrap').hidden=false;const frag=document.createDocumentFragment();for(const r of batch.rows){const tr=document.createElement('tr'),code=document.createElement('td'),state=document.createElement('td');code.className='code';code.textContent=r.code;state.textContent=labels[r.status];state.title=r.note||'';tr.append(code,state);frag.append(tr);}$('rows').replaceChildren(frag);
 }
 async function api(path,body){
@@ -77,15 +81,17 @@ async function api(path,body){
 }
 $('login').onclick=async()=>{busy=true;refresh();status('正在读取邮箱站的管理员登录……');try{if(!sameOrigin)throw Error('请从 '+B.ORIGIN+'/batch-register.html 打开本页。');token=window.localStorage.getItem('token')||'';if(!token)throw Error('当前浏览器没有邮箱站登录状态。请先打开邮箱站登录管理员账号，再回到本页重试。');const identity=await api('/my/loginUserInfo');if(!identity.permKeys?.includes('*'))throw Error('请使用邮箱站主管理员账号。');const roles=await api('/role/selectUse');if(!Array.isArray(roles))throw Error('未取得角色列表，请检查管理员权限。');$('role').replaceChildren(new Option('请选择普通用户角色',''));for(const r of roles)if(Number(r.roleId)>0&&!/admin|管理员/i.test(r.name))$('role').append(new Option(r.name+' · ID '+r.roleId,r.roleId));connected=true;$('identity').textContent='已连接：'+identity.email+' · 管理员';status('连接成功。请选择普通用户角色和兑换期限，再准备批次。');}catch(e){token='';connected=false;status(e.message,true);}finally{busy=false;refresh();}};
 $('logout').onclick=()=>{token='';connected=false;$('identity').textContent='已断开本页连接。批次仍保留，可先下载备份。';refresh();status('已断开本页连接；邮箱站本身的登录状态未改变。');};
-$('prepare').onclick=()=>{try{const d=new Date($('expiry').value);if(!Number.isFinite(d.getTime()))throw Error('请选择兑换截止时间。');batch=B.plan(Number($('quantity').value),Number($('role').value),d.toISOString().slice(0,19).replace('T',' '));exported=new Set();backup();status('恢复备份已发起下载。确认文件保存后，再点击“开始入库”。目前候选码还不能交付。');refresh();}catch(e){status(e.message,true);}};
+$('prepare').onclick=()=>{try{const d=new Date($('expiry').value);if(!Number.isFinite(d.getTime()))throw Error('请选择兑换截止时间。');batch=B.plan(Number($('quantity').value),Number($('role').value),d.toISOString().slice(0,19).replace('T',' '));exported=new Set();backup();status('恢复备份已发起下载。确认文件保存后，再点击“开始入库”。当前仍是候选码，无法注册。');refresh();}catch(e){status(e.message,true);}};
 $('import').onclick=()=>$('importFile').click();$('importFile').onchange=async()=>{const f=$('importFile').files[0];if(!f)return;try{if(f.size>1048576)throw Error('批次文件过大。');batch=B.validate(JSON.parse(await f.text()));exported=new Set(Array.isArray(batch.exportedFormats)?batch.exportedFormats.filter(x=>['txt','csv'].includes(x)):[]);status('批次已恢复。先回查库存，再继续；不会自动重新生成码。');refresh();}catch(e){status(e.message,true);}$('importFile').value='';};
 $('stop').onclick=()=>{stop=true;status('结束当前请求后暂停并回查，请保留页面。');};$('backup').onclick=backup;
-async function verify(){B.reconcile(batch,await api('/regKey/list?code='+encodeURIComponent(batch.prefix)));refresh();return batch.rows.filter(r=>r.status==='confirmed');}
+async function verify(){B.reconcile(batch,await api(B.listPath(batch)));refresh();return batch.rows.filter(r=>r.status==='confirmed');}
 async function operation(fn){if(busy)return;busy=true;stop=false;refresh();try{await fn();}catch(e){status(e.message,true);}finally{busy=false;refresh();}}
 $('run').onclick=()=>operation(async()=>{status('正在逐张入库。断网时不要新建批次，恢复后继续同一批即可。');const result=await B.run(batch,api,{onChange:refresh,shouldStop:()=>stop,delay:()=>new Promise(r=>setTimeout(r,120))});backup();status(result.paused?'本批次已暂停。检查网络/权限后继续同一批次。'+(result.reason||''):'入库及回查完成；导出前还会再次检查库存。');});
 $('verify').onclick=()=>operation(async()=>{const rows=await verify();status(`已回查，可导出 ${rows.length} 张。已用、过期或参数不符的码会排除。`);});
 function csvCell(v){return '"'+String(v).replaceAll('"','""')+'"';}
-async function exportRows(format){await operation(async()=>{if(exported.has(format))throw Error('这个格式已导出，请使用之前下载的文件。');const rows=await verify();if(!rows.length)throw Error('当前没有经过回查的可用库存，不能导出。');if(!confirm(`将下载 ${rows.length} 张可用单次码。TXT 与 CSV 是同一批库存，请只导入易店一次。继续？`))return;const name=batch.prefix.slice(0,-1);if(format==='txt')download(name+'-易店一行一码.txt',rows.map(r=>r.code).join('\r\n')+'\r\n','text/plain;charset=utf-8');else download(name+'-库存明细.csv','\ufeff'+[['code','count','roleId','expireTimeUtc','batch'],...rows.map(r=>[r.code,1,batch.roleId,batch.expireTime,name])].map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n','text/csv;charset=utf-8');exported.add(format);batch.exportedAt=new Date().toISOString();backup();status(`已发起下载 ${rows.length} 张库存及最新恢复备份。请确认文件保存；同一批次只导入易店一次。`);});}
+async function exportRows(format){await operation(async()=>{if(exported.has(format))throw Error('这个格式已导出，请使用之前下载的文件。');const rows=await verify();if(!rows.length)throw Error('当前没有经过回查的可用库存，不能导出。');if(!confirm(`将下载 ${rows.length} 张可用单次码。TXT 与 CSV 是同一批库存，请只导入易店一次。继续？`))return;const name=B.label(batch);if(format==='txt')download(name+'-易店一行一码.txt',rows.map(r=>r.code).join('\r\n')+'\r\n','text/plain;charset=utf-8');else download(name+'-库存明细.csv','\ufeff'+[['code','count','roleId','expireTimeUtc','batch'],...rows.map(r=>[r.code,1,batch.roleId,batch.expireTime,name])].map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n','text/csv;charset=utf-8');exported.add(format);batch.exportedAt=new Date().toISOString();backup();status(`已发起下载 ${rows.length} 张库存及最新恢复备份。请确认文件保存；同一批次只导入易店一次。`);});}
 $('txt').onclick=()=>exportRows('txt');$('csv').onclick=()=>exportRows('csv');
 const date=new Date(Date.now()+30*86400000);date.setHours(23,59,0,0);$('expiry').value=new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);$('zone').textContent='按本地时区 '+Intl.DateTimeFormat().resolvedOptions().timeZone+' 填写，自动转换为 UTC 入库。';if(!sameOrigin)status('请把此文件部署到邮箱站，并从 '+B.ORIGIN+'/batch-register.html 打开。',true);window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});refresh();
 </script></body></html>
+
+
